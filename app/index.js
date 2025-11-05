@@ -1,49 +1,87 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Text, View, StyleSheet, Image, TouchableOpacity } from 'react-native';
 import { useRouter, Link } from 'expo-router';
+import { TextInput } from 'react-native';
+import { signInWithEmailAndPassword } from 'firebase/auth'; 
+import { auth } from '../firebase.config'; 
+import { Button } from 'react-native-paper'
 
 const App = () => {
+  const [email, setEmail] = useState('');
+  const [senha, setSenha] = useState('');
+  const [loading, setLoading] = useState(false); 
+
   const router = useRouter();
 
+  const handleLogin = () => {
+    setLoading(true);
+    console.log('email:' + email);
+    console.log('senha:' + senha);
+    signInWithEmailAndPassword(auth, email, senha)
+      .then((userCredential) => {
+    
+        
+        setLoading(false);
+
+        const user = userCredential.user;
+        console.log("deu certo");
+     
+        router.push('/telaprincipal');
+      })
+      .catch((error) => {
+        const errorCode = error.code;
+        const errorMessage = error.message;
+
+        console.error(errorCode, errorMessage);
+      });
+  };
+
+  
   return (
-    <View style={[styles.container, styles.fundo]}>
+    <View style={[styles.container, styles.fundo]}>handleLogin
       <Image source={require('../img/Group12.png')} style={styles.logo} />
 
       <View style={styles.buttonContainer}>
-        <TouchableOpacity style={styles.inputButton}>
-          <Text style={styles.inputButtonText}>Email</Text>
-        </TouchableOpacity>
+        <TextInput
+          style={styles.input}
+          placeholder="Email"
+          value={email}
+          onChangeText={a => setEmail(a)}
+        />
       </View>
 
       <View style={styles.buttonContainer}>
-        <TouchableOpacity style={styles.inputButton}>
-          <Text style={styles.inputButtonText}>Senha</Text>
-        </TouchableOpacity>
+        <TextInput
+          style={styles.input}
+          placeholder="Senha"
+          secureTextEntry
+          value={senha}
+          onChangeText={a => setSenha(a)}
+        />
       </View>
 
-  
-      <TouchableOpacity style={styles.loginButton} onPress={() => router.push('/telaprincipal')}>
-        <Text style={styles.loginText}>LOGIN</Text>
-        <Image source={require('../img/user.png')} style={styles.icon} />
-      </TouchableOpacity>
+       <Button mode='contained' onPress={handleLogin} loading={loading}>LOGIN</Button>
 
-  
       <TouchableOpacity style={styles.loginButton} onPress={() => router.push('/telainicialchefs')}>
         <Text style={styles.loginText}>LOGIN</Text>
         <Image source={require('../img/chef-hat.png')} style={styles.icon} />
       </TouchableOpacity>
 
-   
       <TouchableOpacity style={styles.loginButton} onPress={() => router.push('/telainicialrestaurante')}>
         <Text style={styles.loginText}>LOGIN</Text>
         <Image source={require('../img/restaurant-cutlery-symbol-of-a-cross.png')} style={styles.icon} />
       </TouchableOpacity>
 
       <Text style={{ marginTop: 10 }}>Ainda não tem conta?</Text>
+      <TouchableOpacity onPress={() => router.push("/EsqueciSenha")}>
+  <Text style={{ marginTop: 10, color: "#8C0000", fontWeight: "bold" }}>
+    Esqueci a senha!
+  </Text>
+</TouchableOpacity>
       <Link style={styles.cadastreseText} href="/telacadastro">Cadastre-se!</Link>
     </View>
   );
-}
+};
 
 const styles = StyleSheet.create({
   container: {
@@ -65,15 +103,12 @@ const styles = StyleSheet.create({
     width: '80%',
     marginBottom: 15,
   },
-  inputButton: {
-    backgroundColor: '#8C0000',
+  input: {
+    backgroundColor: '#fff',
     padding: 10,
     borderRadius: 5,
-  },
-  inputButtonText: {
-    color: '#fff',
-    textAlign: 'center',
-    fontWeight: 'bold',
+    borderColor: '#ccc',
+    borderWidth: 1,
   },
   loginButton: {
     flexDirection: 'row',
@@ -98,6 +133,11 @@ const styles = StyleSheet.create({
     color: '#8C0000',
     fontSize: 18,
     marginTop: 5,
+  },
+  messageText: {
+    color: 'green', // Para sucesso
+    fontWeight: 'bold',
+    marginTop: 10,
   },
 });
 
